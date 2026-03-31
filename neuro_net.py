@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # Let's teach it one simple rule:
     # Given this state → action 2 (turn right) should score highest
     fake_state  = np.array([1,0,0,1,0,0,1,0,0,0,1], dtype=float)
-    fake_target = np.array([0.0, 0.0, 1.0])  # we WANT output 2 to be 1.0
+    fake_target = np.array([0.0, 1.0, 0.0])  # we WANT output 2 to be 1.0
 
     print("Training the network on one example...\n")
     print(f"{'Step':<8} {'Loss':>10}  {'Scores (left, straight, right)'}")
@@ -73,4 +73,4 @@ if __name__ == "__main__":
             print(f"{step:<8} {loss:>10.6f}  {np.round(scores, 3)}")
 
     print("\nFinal chosen action:", net.predict(fake_state))
-    print("(Should be 2 = turn right )")
+    print("(Should be 1 = go straight )")
