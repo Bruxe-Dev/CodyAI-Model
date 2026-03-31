@@ -25,23 +25,31 @@ class NeuralNetwork:
 
         return self.z2
 
-    def backward (self, x, target, learning_rate = 0.001):
+    def backward(self, x, target, learning_rate=0.001):
+        # Ensure inputs are treated as 2D batch arrays
+        x = np.atleast_2d(x)
+        target = np.atleast_2d(target)
+
         output = self.forward(x)
         loss = np.mean((output - target) **2)
 
-        d_output = 2 * (output- target)/ len(target) #This calculates how each neuron contributed to the loss ( Gradient)
+        # Gradient of MSE with respect to the output.
+        # We divide by the number of output features (target.shape[1]), so that gradients 
+        # naturally sum across the batch, preserving the same scale as the prior SGD approach.
+        d_output = 2 * (output - target) / target.shape[1] 
 
-        d_w2 = np.outer(self.a1,d_output) #The outer product
-        d_b2 = d_output
+        # Vectorized backpropagation using Matrix Multiplication (Dot Products)
+        d_w2 = np.dot(self.a1.T, d_output) 
+        d_b2 = np.sum(d_output, axis=0)
 
         d_hidden  = np.dot(d_output, self.w2.T) #Move output error back into the hidden layer (Transposing the matrix)
 
         #Filter the error so that it passes through neurons that were active during the Forward pass
 
-        d_hidden *= self.relu_derivative(self.z1) #Error will pass through neurons with 1
+        d_hidden *= self.relu_derivative(self.z1) # Error will pass through neurons with 1
 
-        d_w1 = np.outer(x, d_hidden)
-        d_b1 = d_hidden
+        d_w1 = np.dot(x.T, d_hidden)
+        d_b1 = np.sum(d_hidden, axis=0)
 
         self.w1 -= learning_rate * d_w1
         self.b1 -= learning_rate * d_b1

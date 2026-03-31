@@ -34,25 +34,34 @@ class DQNAgent:
         if len(self.memory) < self.batch_size:
             return
     
-        batch = random.sample(self.memory,self.batch_size)
+        batch = random.sample(self.memory, self.batch_size)
 
-        for state, action, reward, next_state, done in batch:
-            if done:
-                q_target = reward
+        # Create batched NumPy arrays
+        states = np.array([exp[0] for exp in batch])
+        actions = np.array([exp[1] for exp in batch])
+        rewards = np.array([exp[2] for exp in batch])
+        next_states = np.array([exp[3] for exp in batch])
+        dones = np.array([exp[4] for exp in batch])
+
+        # Predict Q-values for current states and next states (Batched!)
+        q_values = self.network.forward(states)
+        future_qs = self.network.forward(next_states)
+
+        targets = q_values.copy()
+
+        # Update targets with the Q-learning formula
+        for i in range(self.batch_size):
+            if dones[i]:
+                targets[i, actions[i]] = rewards[i]
             else:
-                future_q = np.max(self.network.forward(next_state))
-                q_target = reward + self.gamma * future_q
+                targets[i, actions[i]] = rewards[i] + self.gamma * np.max(future_qs[i])
 
-            q_values = self.network.forward(state) #Get all the Q Values for each action (Right, Straight, Left)
+        # Perform one single vectorized backward pass for the whole batch
+        self.network.backward(states, targets, self.learning_rate)
 
-            target = q_values.copy()
-            target[action] = q_target
-
-            self.network.backward(state, target, self.learning_rate)
-
-            # Decay epsilon — become less random over time
-            if self.epsilon > self.epsilon_min:
-                self.epsilon *= self.epsilon_decay
+        # Decay epsilon — become less random over time (happens once per learning step)
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
     def save(self, filepath="snake_brain.npz"):
         np.savez(filepath,
