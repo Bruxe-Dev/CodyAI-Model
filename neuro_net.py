@@ -41,7 +41,7 @@ class NeuralNetwork:
         d_hidden *= self.relu_derivative(self.z1) #Error will pass through neurons with 1
 
         d_w1 = np.outer(x, d_hidden)
-        d_b1 - d_hidden
+        d_b1 = d_hidden
 
         self.W1 -= learning_rate * d_W1
         self.b1 -= learning_rate * d_b1
