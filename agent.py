@@ -56,8 +56,8 @@ class DQNAgent:
 
     def save(self, filepath="snake_brain.npz"):
         np.savez(filepath,
-                 w1=self.network.W1, b1=self.network.b1,
-                 w2=self.network.W2, b2=self.network.b2)
+                 w1=self.network.w1, b1=self.network.b1,
+                 w2=self.network.w2, b2=self.network.b2)
         print(f"Model saved to {filepath}")
 
     def load(self, filepath="snake_brain.npz"):
