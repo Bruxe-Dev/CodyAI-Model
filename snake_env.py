@@ -17,7 +17,7 @@ class Direction(Enum):
     RIGHT = 4
 
 class SnakeEnv:
-    def __init__(self, render=False):
+    def __init__(self, render=True):
         """
         render=False → runs invisibly (fast training, no window)
         render=True  → shows the game window (watch it play)
