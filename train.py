@@ -2,12 +2,8 @@ import numpy as np
 from snake_env import SnakeEnv
 from agent import DQNAgent
 
-# ================================================================
-# TRAINING LOOP — runs thousands of games to train the AI
-# ================================================================
-
 def train():
-    env   = SnakeEnv(render=False)   # invisible = fast training
+    env   = SnakeEnv(render=True)  
     agent = DQNAgent()
 
     num_games    = 1000
@@ -59,7 +55,6 @@ def train():
 
 
 def watch():
-    """Load the trained model and watch it play."""
     env   = SnakeEnv(render=True)
     agent = DQNAgent()
     agent.epsilon = 0.0        # no random moves when watching
