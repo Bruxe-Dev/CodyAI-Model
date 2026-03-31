@@ -12,6 +12,11 @@ class NeuralNetwork:
         self.w2 = np.random.randn(hidden_size, output_size) * np.sqrt(2.0 / hidden_size)
         self.b2  = np.zeros(output_size)
 
+        self.z1 = []
+        self.a1 = []
+        self.z2 = []
+        self.output = []
+
     def relu(self,x):
         return np.maximum(0,x)
 
@@ -45,8 +50,7 @@ class NeuralNetwork:
 
         d_hidden  = np.dot(d_output, self.w2.T) #Move output error back into the hidden layer (Transposing the matrix)
 
-        #Filter the error so that it passes through neurons that were active during the Forward pass
-
+        # Filter the error so that it passes through neurons that were active during the Forward pass
         d_hidden *= self.relu_derivative(self.z1) # Error will pass through neurons with 1
 
         d_w1 = np.dot(x.T, d_hidden)
