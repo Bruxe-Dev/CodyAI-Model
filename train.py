@@ -90,7 +90,7 @@ def watch():
     agent.epsilon = 0.0
 
     try:
-        agent.load("snake_brain.npz")
+        agent.load("Cod_brain.npz")
     except FileNotFoundError:
         print("No saved model found! Train first: python train.py")
         return
