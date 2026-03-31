@@ -62,9 +62,9 @@ class DQNAgent:
 
     def load(self, filepath="snake_brain.npz"):
         data = np.load(filepath)
-        self.network.W1 = data["W1"]
+        self.network.w1 = data["W1"]
         self.network.b1 = data["b1"]
-        self.network.W2 = data["W2"]
+        self.network.w2 = data["W2"]
         self.network.b2 = data["b2"]
         print(f"Model loaded from {filepath}")
 
