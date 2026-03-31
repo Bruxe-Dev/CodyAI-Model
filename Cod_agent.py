@@ -1,7 +1,7 @@
 import numpy as np 
 import random
 from collections import deque
-from neuro_net import NeuralNetwork
+from Cod_neuro_net import NeuralNetwork
 
 class DQNAgent:
     def __init__ (self):
@@ -13,12 +13,12 @@ class DQNAgent:
 
         self.memory = deque (maxlen=100_000) #Deque will delete the memory when full
 
-        self.gamma = 0.9 #Discount (Model focuses on future rewards)
-        self.epsilon = 1.0 # Exploration rate (from 1.0 to 100% each try)
+        self.gamma = 0.9 # Discount (Model focuses on future rewards) - Adjust this, higher = more focus on future rewards
+        self.epsilon = 1.0 # Exploration rate (from 1.0 to 100% each try) - Adjust this, higher = more exploration
         self.epsilon_min = 0.01 # The agent must at least explore 1% for each try
-        self.epsilon_decay = 0.995 #Ensures Exploration and Exploitation
-        self.learning_rate = 0.001 # How the NN updates its bias and Weight
-        self.batch_size = 64 #Learn from 64 past experiences at once
+        self.epsilon_decay = 0.995 # Ensures Exploration and Exploitation
+        self.learning_rate = 0.001 # How the NN updates its bias and Weight - better understanding that, it's the steps the gradient takes per update 😂
+        self.batch_size = 64 # Learn from 64 past experiences at once
 
 
     def remember (self, state, action, reward, next_state, done):
@@ -49,12 +49,9 @@ class DQNAgent:
 
         targets = q_values.copy()
 
-        # Update targets with the Q-learning formula
-        for i in range(self.batch_size):
-            if dones[i]:
-                targets[i, actions[i]] = rewards[i]
-            else:
-                targets[i, actions[i]] = rewards[i] + self.gamma * np.max(future_qs[i])
+        # Update targets with the Q-learning formula (Fully Vectorized!)
+        updates = rewards + self.gamma * np.max(future_qs, axis=1) * (1 - dones)
+        targets[np.arange(self.batch_size), actions] = updates
 
         # Perform one single vectorized backward pass for the whole batch
         self.network.backward(states, targets, self.learning_rate)

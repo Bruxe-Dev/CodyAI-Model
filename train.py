@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from snake_env import SnakeEnv
-from agent import DQNAgent
+from Cod_agent import DQNAgent
 
 def plot_results(scores, best_scores, avg_scores, epsilons):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7))

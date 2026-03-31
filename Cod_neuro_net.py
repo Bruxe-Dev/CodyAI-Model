@@ -3,12 +3,13 @@ import numpy as np
 class NeuralNetwork:
     def __init__(self,input_size, hidden_size, output_size):
 
-        #Layer 1: Connects input to hidden neurons
-        self.w1 = np.random.randn(input_size,hidden_size) * 0.01
+        # Layer 1: Connects input to hidden neurons
+        # Using He Initialization (optimal for ReLU activations)
+        self.w1 = np.random.randn(input_size, hidden_size) * np.sqrt(2.0 / input_size)
         self.b1 = np.zeros(hidden_size)
 
-        #Layer 2 : Connects hidden neurons to output
-        self.w2 = np.random.randn(hidden_size,output_size) * 0.01
+        # Layer 2: Connects hidden neurons to output
+        self.w2 = np.random.randn(hidden_size, output_size) * np.sqrt(2.0 / hidden_size)
         self.b2  = np.zeros(output_size)
 
     def relu(self,x):
