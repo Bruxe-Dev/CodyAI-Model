@@ -33,4 +33,12 @@ def learn(self):
     if len(self.memory) < self.batch_size:
         return
     
-    
+    batch = random.sample(self.memory,self.batch_size)
+
+    for state, action, reward, next_state, done in batch:
+        if done:
+            q_target = reward
+        else:
+            future_q = np.max(self.network.forward(next_state))
+            q_target = reward + self.gamma * future_q
+            
