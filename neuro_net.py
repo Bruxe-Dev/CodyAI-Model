@@ -53,17 +53,24 @@ class NeuroNetwork:
         scores = self.forward(state)
         return np.argmax(scores)
 
+if __name__ == "__main__":
+    net = NeuralNetwork(input_size=11, hidden_size=256, output_size=3)
 
-if __name__== "__main__":
-    net = NeuroNetwork(input_size=11,hidden_size=256,output_size=3)
+    # Let's teach it one simple rule:
+    # Given this state → action 2 (turn right) should score highest
+    fake_state  = np.array([1,0,0,1,0,0,1,0,0,0,1], dtype=float)
+    fake_target = np.array([0.0, 0.0, 1.0])  # we WANT output 2 to be 1.0
 
-    fake_state = np.random.randn(11)
-    print("Game state (11 inputs):", np.round(fake_state, 2))
+    print("Training the network on one example...\n")
+    print(f"{'Step':<8} {'Loss':>10}  {'Scores (left, straight, right)'}")
+    print("-" * 60)
 
-    scores = net.forward(fake_state)
-    print("\nAction scores:", np.round(scores, 4))
-    print("  0=turn left, 1=go straight, 2=turn right")
+    for step in range(1, 301):
+        loss = net.backward(fake_state, fake_target, learning_rate=0.01)
 
-    action = net.predict(fake_state)
-    print(f"\nChosen action: {action}")
-    print("(This is random for now — it hasn't learned anything yet!)")
+        if step % 30 == 0 or step == 1:
+            scores = net.forward(fake_state)
+            print(f"{step:<8} {loss:>10.6f}  {np.round(scores, 3)}")
+
+    print("\nFinal chosen action:", net.predict(fake_state))
+    print("(Should be 2 = turn right )")
