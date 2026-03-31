@@ -22,3 +22,15 @@ def __init__ (self):
 
 def remember (self, state, action, reward, next_state, done):
     self.memory.append((state,actio,reward,next_state,done))
+
+def act (self, state):
+    if random.random() < self.epsilon:
+        return random.randint(0,2)
+
+    return self.network.predict(state)
+
+def learn(self):
+    if len(self.memory) < self.batch_size:
+        return
+    
+    
