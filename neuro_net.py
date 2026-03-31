@@ -35,6 +35,19 @@ class NeuroNetwork:
         d_b2 = d_output
 
         d_hidden  = np.dot(d_output, self.w2.T) #Move output error back into the hidden layer (Transposing the matrix)
+
+        #Filter the error so that it passes through neurons that were active during the Forward pass
+
+        d_hidden *= self.relu_derivative(self.z1) #Error will pass through neurons with 1
+
+        d_w1 = np.outer(x, d_hidden)
+        d_b1 - d_hidden
+
+        self.W1 -= learning_rate * d_W1
+        self.b1 -= learning_rate * d_b1
+        self.W2 -= learning_rate * d_W2
+        self.b2 -= learning_rate * d_b2
+        
     def predict(self, state):
         scores = self.forward(state)
         return np.argmax(scores)
