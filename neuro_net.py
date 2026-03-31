@@ -16,7 +16,7 @@ class NeuroNetwork:
 
     def relu_derivative(self,x):
         return (x > 0).astype(float)
-        
+
     def forward(self, x):
         self.z1 = np.dot(x, self.w1) + self.b1
         self.a1 = self.relu(self.z1)
@@ -25,10 +25,11 @@ class NeuroNetwork:
 
         return self.z2
 
+    def backward (self, x, target, learning_rate = 0.001):
+        output = self.forward(x)
+        loss = np.mean((output - target) **2)
 
-    def backward(self, x, target , learning_rate =0.001):
-
-    
+        d_output = 2 * (output- target)/ len(target) #This calculates how each neuron contributed to the loss ( Gradient)
     def predict(self, state):
         scores = self.forward(state)
         return np.argmax(scores)
