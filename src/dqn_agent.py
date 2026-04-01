@@ -1,7 +1,7 @@
 import numpy as np 
 import random
 from collections import deque
-from nn import NeuralNetwork
+from src.nn import NeuralNetwork
 
 class DQNAgent:
     def __init__ (self):
@@ -60,17 +60,17 @@ class DQNAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-    def save(self, filepath="snake_brain.npz"):
+    def save(self, filepath="main_model.npz"):
         np.savez(filepath,
                  w1=self.network.w1, b1=self.network.b1,
                  w2=self.network.w2, b2=self.network.b2)
         print(f"Model saved to {filepath}")
 
-    def load(self, filepath="snake_brain.npz"):
+    def load(self, filepath="main_model.npz"):
         data = np.load(filepath)
-        self.network.w1 = data["W1"]
+        self.network.w1 = data["w1"]
         self.network.b1 = data["b1"]
-        self.network.w2 = data["W2"]
+        self.network.w2 = data["w2"]
         self.network.b2 = data["b2"]
         print(f"Model loaded from {filepath}")
 
@@ -83,6 +83,7 @@ if __name__ == "__main__":
     # Simulate 200 random game steps
     for i in range(200):
         state      = np.random.randn(11)
+        env   = SnakeEnv(render=True)   # set render=False for faster training (no window)
         action     = agent.act(state)
         reward     = random.choice([-10, 1, 10])
         next_state = np.random.randn(11)

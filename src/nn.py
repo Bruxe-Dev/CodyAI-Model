@@ -70,9 +70,9 @@ if __name__ == "__main__":
     net = NeuralNetwork(input_size=11, hidden_size=256, output_size=3)
 
     # Let's teach it one simple rule:
-    # Given this state → action 2 (turn right) should score highest
-    fake_state  = np.array([1,0,0,1,0,0,1,0,0,0,1], dtype=float)
-    fake_target = np.array([0.0, 1.0, 0.0])  # we WANT output 2 to be 1.0
+    # Given this state → action 1 (go straight) should score highest
+    fake_state  = np.array([0,1,0,1,0,0,0,0,0,0,1], dtype=float)
+    fake_target = np.array([0.0, 1.0, 0.0])  # We want output 1 to be 1.0
 
     print("Training the network on one example...\n")
     print(f"{'Step':<8} {'Loss':>10}  {'Scores (left, straight, right)'}")

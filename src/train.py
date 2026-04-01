@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from snake_env import SnakeEnv
-from dqn_agent import DQNAgent
+from src.snake_env import SnakeEnv
+from src.dqn_agent import DQNAgent
 
 def plot_results(scores, best_scores, avg_scores, epsilons):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7))
@@ -36,7 +36,7 @@ def plot_results(scores, best_scores, avg_scores, epsilons):
 
 
 def train():
-    env   = SnakeEnv(render=True)   # no window during training
+    env   = SnakeEnv(render=True)   # set render=False for faster training (no window)
     agent = DQNAgent()
 
     num_games  = 1000
@@ -68,7 +68,7 @@ def train():
 
         if env.score > best_score:
             best_score = env.score
-            agent.save("snake_brain.npz")
+            agent.save("main_model.npz")
 
         best_scores.append(best_score)
         avg = float(np.mean(all_scores[-50:]))
@@ -90,7 +90,7 @@ def watch():
     agent.epsilon = 0.0
 
     try:
-        agent.load("snake_brain.npz")
+        agent.load("main_model.npz")
     except FileNotFoundError:
         print("No saved model found! Train first: python train.py")
         return
