@@ -60,7 +60,7 @@ class DQNAgent:
                  w2=self.network.w2, b2=self.network.b2)
         print(f"Model saved to {filepath}")
 
-    def load(self, filepath="snake_brain.npz"):
+    def load(self, filepath="Cod_brain.npz"):
         data = np.load(filepath)
         self.network.w1 = data["W1"]
         self.network.b1 = data["b1"]
