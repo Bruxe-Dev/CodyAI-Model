@@ -54,7 +54,7 @@ class DQNAgent:
             if self.epsilon > self.epsilon_min:
                 self.epsilon *= self.epsilon_decay
 
-    def save(self, filepath="snake_brain.npz"):
+    def save(self, filepath="Cod_brain.npz"):
         np.savez(filepath,
                  w1=self.network.w1, b1=self.network.b1,
                  w2=self.network.w2, b2=self.network.b2)
