@@ -5,7 +5,7 @@ from Cod_agent import DQNAgent
 
 def plot_results(scores, best_scores, avg_scores, epsilons):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7))
-    fig.suptitle("Snake AI — Training Results", fontsize=14, fontweight="bold")
+    fig.suptitle("CodyAI — Training Results", fontsize=14, fontweight="bold")
 
     games = list(range(1, len(scores) + 1))
 
