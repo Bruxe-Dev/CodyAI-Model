@@ -133,3 +133,4 @@ agent.load("main_model.npz")
 ## License
 
 Personal project for learning reinforcement learning.
+And this model will furthermore be trained and trained so that it can be used in other fields Not just playing this Snake game.
