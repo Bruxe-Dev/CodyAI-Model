@@ -39,7 +39,7 @@ def train():
     env   = SnakeEnv(render=False)   # set render=False for faster training (no window)
     agent = DQNAgent()
 
-    num_games  = 1000
+    num_games  = 5000
     best_score = 0
 
     all_scores  = []

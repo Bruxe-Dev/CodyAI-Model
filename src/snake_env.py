@@ -59,17 +59,19 @@ class SnakeEnv:
             self.food = [x, y]
             if self.food not in self.snake:
                 break
-
-    def get_state(self, game):
-        head = game.snake.get_head()
+    def get_state(self):
+        """
+        Enhanced state with 23 features for better AI perception
+        """
+        head = self.snake[0]  # Get head from self.snake, not game.snake
         
-        # Current direction
-        dir_l = game.direction == Direction.LEFT
-        dir_r = game.direction == Direction.RIGHT
-        dir_u = game.direction == Direction.UP
-        dir_d = game.direction == Direction.DOWN
+        # Current direction checks
+        dir_l = self.direction == Direction.LEFT
+        dir_r = self.direction == Direction.RIGHT
+        dir_u = self.direction == Direction.UP
+        dir_d = self.direction == Direction.DOWN
         
-        # Points around head
+        # Points around head (1 block away)
         point_l = [head[0] - BLOCK_SIZE, head[1]]
         point_r = [head[0] + BLOCK_SIZE, head[1]]
         point_u = [head[0], head[1] - BLOCK_SIZE]
@@ -77,24 +79,24 @@ class SnakeEnv:
         
         # DANGER: Immediate collision (1 block away)
         danger_straight = (
-            (dir_r and game.is_collision(point_r)) or 
-            (dir_l and game.is_collision(point_l)) or 
-            (dir_u and game.is_collision(point_u)) or 
-            (dir_d and game.is_collision(point_d))
+            (dir_r and self._is_dangerous(point_r)) or 
+            (dir_l and self._is_dangerous(point_l)) or 
+            (dir_u and self._is_dangerous(point_u)) or 
+            (dir_d and self._is_dangerous(point_d))
         )
         
         danger_right = (
-            (dir_u and game.is_collision(point_r)) or 
-            (dir_d and game.is_collision(point_l)) or 
-            (dir_l and game.is_collision(point_u)) or 
-            (dir_r and game.is_collision(point_d))
+            (dir_u and self._is_dangerous(point_r)) or 
+            (dir_d and self._is_dangerous(point_l)) or 
+            (dir_l and self._is_dangerous(point_u)) or 
+            (dir_r and self._is_dangerous(point_d))
         )
         
         danger_left = (
-            (dir_d and game.is_collision(point_r)) or 
-            (dir_u and game.is_collision(point_l)) or 
-            (dir_r and game.is_collision(point_u)) or 
-            (dir_l and game.is_collision(point_d))
+            (dir_d and self._is_dangerous(point_r)) or 
+            (dir_u and self._is_dangerous(point_l)) or 
+            (dir_r and self._is_dangerous(point_u)) or 
+            (dir_l and self._is_dangerous(point_d))
         )
         
         # NEW: DANGER 2 blocks away (look ahead)
@@ -104,30 +106,30 @@ class SnakeEnv:
         point_d2 = [head[0], head[1] + 2*BLOCK_SIZE]
         
         danger_ahead_2 = (
-            (dir_r and game.is_collision(point_r2)) or 
-            (dir_l and game.is_collision(point_l2)) or 
-            (dir_u and game.is_collision(point_u2)) or 
-            (dir_d and game.is_collision(point_d2))
+            (dir_r and self._is_dangerous(point_r2)) or 
+            (dir_l and self._is_dangerous(point_l2)) or 
+            (dir_u and self._is_dangerous(point_u2)) or 
+            (dir_d and self._is_dangerous(point_d2))
         )
         
         # Food location (relative to head)
-        food_left = game.food.position[0] < head[0]
-        food_right = game.food.position[0] > head[0]
-        food_up = game.food.position[1] < head[1]
-        food_down = game.food.position[1] > head[1]
+        food_left = self.food[0] < head[0]
+        food_right = self.food[0] > head[0]
+        food_up = self.food[1] < head[1]
+        food_down = self.food[1] > head[1]
         
         # NEW: Distance to food (normalized)
-        food_distance_x = abs(game.food.position[0] - head[0]) / SCREEN_WIDTH
-        food_distance_y = abs(game.food.position[1] - head[1]) / SCREEN_HEIGHT
+        food_distance_x = abs(self.food[0] - head[0]) / self.w
+        food_distance_y = abs(self.food[1] - head[1]) / self.h
         
         # NEW: Snake length (normalized)
-        snake_length = len(game.snake.body) / 100  # Normalize to 0-1
+        snake_length = len(self.snake) / 100  # Normalize to 0-1
         
         # NEW: Space available in each direction (how far until wall/body)
-        space_left = head[0] / SCREEN_WIDTH
-        space_right = (SCREEN_WIDTH - head[0]) / SCREEN_WIDTH
-        space_up = head[1] / SCREEN_HEIGHT
-        space_down = (SCREEN_HEIGHT - head[1]) / SCREEN_HEIGHT
+        space_left = head[0] / self.w
+        space_right = (self.w - head[0]) / self.w
+        space_up = head[1] / self.h
+        space_down = (self.h - head[1]) / self.h
         
         state = [
             # Danger signals (1 block away) - 3 features
@@ -223,14 +225,22 @@ class SnakeEnv:
                 self._draw()
             return self.get_state(), reward, done
 
+        # Calculate distance to food before and after move
+        old_distance = abs(self.snake[1][0] - self.food[0]) + abs(self.snake[1][1] - self.food[1])
+        new_distance = abs(new_head[0] - self.food[0]) + abs(new_head[1] - self.food[1])
+
         if new_head == self.food:
-            reward = 10
+            reward = 10  # Big reward for eating
             self.score += 1
-            self.steps = 0              # reset loop counter on food
+            self.steps = 0
             self.max_steps = len(self.snake) * 100
             self._place_food()
         else:
-            reward = 1                  # small reward for surviving
+            # Reward for moving closer, penalty for moving away
+            if new_distance < old_distance:
+                reward = 1  # Moving toward food
+            else:
+                reward = -1  # Moving away from food
             self.snake.pop()
 
         # Punish the AI if it loops forever without eating

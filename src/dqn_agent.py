@@ -5,7 +5,7 @@ from src.nn import NeuralNetwork
 
 class DQNAgent:
     def __init__ (self):
-        self.input_size = 11
+        self.input_size = 23
         self.hidden_size = 256
         self. output_size = 3
 
@@ -13,12 +13,12 @@ class DQNAgent:
 
         self.memory = deque (maxlen=100_000) #Deque will delete the memory when full
 
-        self.gamma = 0.9 # Discount (Model focuses on future rewards) - Adjust this, higher = more focus on future rewards
+        self.gamma = 0.95 # Discount (Model focuses on future rewards) - Adjust this, higher = more focus on future rewards
         self.epsilon = 1.0 # Exploration rate (from 1.0 to 100% each try) - Adjust this, higher = more exploration
         self.epsilon_min = 0.01 # The agent must at least explore 1% for each try
         self.epsilon_decay = 0.995 # Ensures Exploration and Exploitation
-        self.learning_rate = 0.001 # How the NN updates its bias and Weight - better understanding that, it's the steps the gradient takes per update 😂
-        self.batch_size = 64 # Learn from 64 past experiences at once
+        self.learning_rate = 0.0005 # How the NN updates its bias and Weight - better understanding that, it's the steps the gradient takes per update 😂
+        self.batch_size = 128 # Learn from 128 past experiences at once( higher fast learning)
 
 
     def remember (self, state, action, reward, next_state, done):
