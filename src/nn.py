@@ -31,6 +31,9 @@ class NeuralNetwork:
 
         return self.z2
 
+    def predict(self, x):
+        return np.argmax(self.forward(x), axis=-1)
+
     def backward(self, x, target, learning_rate=0.001):
         # Ensure inputs are treated as 2D batch arrays
         x = np.atleast_2d(x)
@@ -40,9 +43,8 @@ class NeuralNetwork:
         loss = np.mean((output - target) **2)
 
         # Gradient of MSE with respect to the output.
-        # We divide by the number of output features (target.shape[1]), so that gradients 
-        # naturally sum across the batch, preserving the same scale as the prior SGD approach.
-        d_output = 2 * (output - target) / target.shape[1] 
+        # Divide by total elements (batch_size * output_size) for correct scaling
+        d_output = 2 * (output - target) / (target.shape[0] * target.shape[1]) 
 
         # Vectorized backpropagation using Matrix Multiplication (Dot Products)
         d_w2 = np.dot(self.a1.T, d_output) 
@@ -55,6 +57,12 @@ class NeuralNetwork:
 
         d_w1 = np.dot(x.T, d_hidden)
         d_b1 = np.sum(d_hidden, axis=0)
+
+        # Clip gradients to prevent overflow
+        d_w1 = np.clip(d_w1, -1, 1)
+        d_b1 = np.clip(d_b1, -1, 1)
+        d_w2 = np.clip(d_w2, -1, 1)
+        d_b2 = np.clip(d_b2, -1, 1)
 
         self.w1 -= learning_rate * d_w1
         self.b1 -= learning_rate * d_b1

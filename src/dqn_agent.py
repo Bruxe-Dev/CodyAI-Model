@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     # Simulate 200 random game steps
     for i in range(200):
-        state      = np.random.randn(11)
+        state      = np.random.randn(23)
         env   = SnakeEnv(render=True)   # set render=False for faster training (no window)
         action     = agent.act(state)
         reward     = random.choice([-10, 1, 10])
