@@ -60,34 +60,110 @@ class SnakeEnv:
             if self.food not in self.snake:
                 break
 
-    def get_state(self):
-        head = self.snake[0]
-        dir  = self.direction
-
-        # Points one step ahead in each relative direction
-        point_straight = self._next_point(dir)
-        point_right    = self._next_point(self._turn_right(dir))
-        point_left     = self._next_point(self._turn_left(dir))
-
+    def get_state(self, game):
+        head = game.snake.get_head()
+        
+        # Current direction
+        dir_l = game.direction == Direction.LEFT
+        dir_r = game.direction == Direction.RIGHT
+        dir_u = game.direction == Direction.UP
+        dir_d = game.direction == Direction.DOWN
+        
+        # Points around head
+        point_l = [head[0] - BLOCK_SIZE, head[1]]
+        point_r = [head[0] + BLOCK_SIZE, head[1]]
+        point_u = [head[0], head[1] - BLOCK_SIZE]
+        point_d = [head[0], head[1] + BLOCK_SIZE]
+        
+        # DANGER: Immediate collision (1 block away)
+        danger_straight = (
+            (dir_r and game.is_collision(point_r)) or 
+            (dir_l and game.is_collision(point_l)) or 
+            (dir_u and game.is_collision(point_u)) or 
+            (dir_d and game.is_collision(point_d))
+        )
+        
+        danger_right = (
+            (dir_u and game.is_collision(point_r)) or 
+            (dir_d and game.is_collision(point_l)) or 
+            (dir_l and game.is_collision(point_u)) or 
+            (dir_r and game.is_collision(point_d))
+        )
+        
+        danger_left = (
+            (dir_d and game.is_collision(point_r)) or 
+            (dir_u and game.is_collision(point_l)) or 
+            (dir_r and game.is_collision(point_u)) or 
+            (dir_l and game.is_collision(point_d))
+        )
+        
+        # NEW: DANGER 2 blocks away (look ahead)
+        point_l2 = [head[0] - 2*BLOCK_SIZE, head[1]]
+        point_r2 = [head[0] + 2*BLOCK_SIZE, head[1]]
+        point_u2 = [head[0], head[1] - 2*BLOCK_SIZE]
+        point_d2 = [head[0], head[1] + 2*BLOCK_SIZE]
+        
+        danger_ahead_2 = (
+            (dir_r and game.is_collision(point_r2)) or 
+            (dir_l and game.is_collision(point_l2)) or 
+            (dir_u and game.is_collision(point_u2)) or 
+            (dir_d and game.is_collision(point_d2))
+        )
+        
+        # Food location (relative to head)
+        food_left = game.food.position[0] < head[0]
+        food_right = game.food.position[0] > head[0]
+        food_up = game.food.position[1] < head[1]
+        food_down = game.food.position[1] > head[1]
+        
+        # NEW: Distance to food (normalized)
+        food_distance_x = abs(game.food.position[0] - head[0]) / SCREEN_WIDTH
+        food_distance_y = abs(game.food.position[1] - head[1]) / SCREEN_HEIGHT
+        
+        # NEW: Snake length (normalized)
+        snake_length = len(game.snake.body) / 100  # Normalize to 0-1
+        
+        # NEW: Space available in each direction (how far until wall/body)
+        space_left = head[0] / SCREEN_WIDTH
+        space_right = (SCREEN_WIDTH - head[0]) / SCREEN_WIDTH
+        space_up = head[1] / SCREEN_HEIGHT
+        space_down = (SCREEN_HEIGHT - head[1]) / SCREEN_HEIGHT
+        
         state = [
-            # --- 3 danger sensors ---
-            self._is_dangerous(point_straight),   # wall or body ahead?
-            self._is_dangerous(point_right),
-            self._is_dangerous(point_left),
-
-            # --- 4 current direction (one-hot) ---
-            dir == Direction.UP,
-            dir == Direction.DOWN,
-            dir == Direction.LEFT,
-            dir == Direction.RIGHT,
-
-            # --- 4 food direction ---
-            self.food[1] < head[1],   # food is up
-            self.food[1] > head[1],   # food is down
-            self.food[0] < head[0],   # food is left
-            self.food[0] > head[0],   # food is right
+            # Danger signals (1 block away) - 3 features
+            int(danger_straight),
+            int(danger_right),
+            int(danger_left),
+            
+            # NEW: Danger 2 blocks away - 1 feature
+            int(danger_ahead_2),
+            
+            # Current direction - 4 features
+            int(dir_l),
+            int(dir_r),
+            int(dir_u),
+            int(dir_d),
+            
+            # Food location - 4 features
+            int(food_left),
+            int(food_right),
+            int(food_up),
+            int(food_down),
+            
+            # NEW: Food distance - 2 features
+            food_distance_x,
+            food_distance_y,
+            
+            # NEW: Snake length - 1 feature
+            snake_length,
+            
+            # NEW: Available space - 4 features (helps avoid traps)
+            space_left,
+            space_right,
+            space_up,
+            space_down
         ]
-
+        
         return np.array(state, dtype=float)
 
     def _next_point(self, direction):
