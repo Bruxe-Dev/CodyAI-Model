@@ -61,11 +61,11 @@ class SnakeEnv:
                 break
     def get_state(self):
         """
-        Enhanced state with 23 features for better AI perception
+        Enhanced state with 23 features
         """
-        head = self.snake[0]  # Get head from self.snake, not game.snake
+        head = self.snake[0]
         
-        # Current direction checks
+        # Current direction
         dir_l = self.direction == Direction.LEFT
         dir_r = self.direction == Direction.RIGHT
         dir_u = self.direction == Direction.UP
@@ -77,7 +77,13 @@ class SnakeEnv:
         point_u = [head[0], head[1] - BLOCK_SIZE]
         point_d = [head[0], head[1] + BLOCK_SIZE]
         
-        # DANGER: Immediate collision (1 block away)
+        # Points 2 blocks away
+        point_l2 = [head[0] - 2*BLOCK_SIZE, head[1]]
+        point_r2 = [head[0] + 2*BLOCK_SIZE, head[1]]
+        point_u2 = [head[0], head[1] - 2*BLOCK_SIZE]
+        point_d2 = [head[0], head[1] + 2*BLOCK_SIZE]
+        
+        # Danger 1 block away (straight)
         danger_straight = (
             (dir_r and self._is_dangerous(point_r)) or 
             (dir_l and self._is_dangerous(point_l)) or 
@@ -85,6 +91,7 @@ class SnakeEnv:
             (dir_d and self._is_dangerous(point_d))
         )
         
+        # Danger 1 block away (right)
         danger_right = (
             (dir_u and self._is_dangerous(point_r)) or 
             (dir_d and self._is_dangerous(point_l)) or 
@@ -92,6 +99,7 @@ class SnakeEnv:
             (dir_r and self._is_dangerous(point_d))
         )
         
+        # Danger 1 block away (left)
         danger_left = (
             (dir_d and self._is_dangerous(point_r)) or 
             (dir_u and self._is_dangerous(point_l)) or 
@@ -99,12 +107,7 @@ class SnakeEnv:
             (dir_l and self._is_dangerous(point_d))
         )
         
-        # NEW: DANGER 2 blocks away (look ahead)
-        point_l2 = [head[0] - 2*BLOCK_SIZE, head[1]]
-        point_r2 = [head[0] + 2*BLOCK_SIZE, head[1]]
-        point_u2 = [head[0], head[1] - 2*BLOCK_SIZE]
-        point_d2 = [head[0], head[1] + 2*BLOCK_SIZE]
-        
+        # Danger 2 blocks away
         danger_ahead_2 = (
             (dir_r and self._is_dangerous(point_r2)) or 
             (dir_l and self._is_dangerous(point_l2)) or 
@@ -112,59 +115,61 @@ class SnakeEnv:
             (dir_d and self._is_dangerous(point_d2))
         )
         
-        # Food location (relative to head)
+        # Food location (binary)
         food_left = self.food[0] < head[0]
         food_right = self.food[0] > head[0]
         food_up = self.food[1] < head[1]
         food_down = self.food[1] > head[1]
         
-        # NEW: Distance to food (normalized)
+        # Distance to food (normalized 0-1)
         food_distance_x = abs(self.food[0] - head[0]) / self.w
         food_distance_y = abs(self.food[1] - head[1]) / self.h
         
-        # NEW: Snake length (normalized)
-        snake_length = len(self.snake) / 100  # Normalize to 0-1
+        # Snake length (normalized)
+        snake_length = len(self.snake) / 100.0
         
-        # NEW: Space available in each direction (how far until wall/body)
+        # Available space in each direction (normalized)
         space_left = head[0] / self.w
         space_right = (self.w - head[0]) / self.w
         space_up = head[1] / self.h
         space_down = (self.h - head[1]) / self.h
         
+        # Build state array (23 features total)
         state = [
-            # Danger signals (1 block away) - 3 features
-            int(danger_straight),
-            int(danger_right),
-            int(danger_left),
+            # Danger (4 features)
+            int(danger_straight),      # 0
+            int(danger_right),         # 1
+            int(danger_left),          # 2
+            int(danger_ahead_2),       # 3
             
-            # NEW: Danger 2 blocks away - 1 feature
-            int(danger_ahead_2),
+            # Direction (4 features)
+            int(dir_l),                # 4
+            int(dir_r),                # 5
+            int(dir_u),                # 6
+            int(dir_d),                # 7
             
-            # Current direction - 4 features
-            int(dir_l),
-            int(dir_r),
-            int(dir_u),
-            int(dir_d),
+            # Food direction (4 features)
+            int(food_left),            # 8
+            int(food_right),           # 9
+            int(food_up),              # 10
+            int(food_down),            # 11
             
-            # Food location - 4 features
-            int(food_left),
-            int(food_right),
-            int(food_up),
-            int(food_down),
+            # Food distance (2 features)
+            food_distance_x,           # 12
+            food_distance_y,           # 13
             
-            # NEW: Food distance - 2 features
-            food_distance_x,
-            food_distance_y,
+            # Snake length (1 feature)
+            snake_length,              # 14
             
-            # NEW: Snake length - 1 feature
-            snake_length,
-            
-            # NEW: Available space - 4 features (helps avoid traps)
-            space_left,
-            space_right,
-            space_up,
-            space_down
+            # Available space (4 features)
+            space_left,                # 15
+            space_right,               # 16
+            space_up,                  # 17
+            space_down,                # 18
         ]
+        
+        # VERIFY: Should be 23 features
+        assert len(state) == 23, f"State has {len(state)} features, expected 23"
         
         return np.array(state, dtype=float)
 

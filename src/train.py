@@ -51,6 +51,13 @@ def train():
     print(f"{'Game':<8} {'Score':<8} {'Best':<8} {'Avg(50)':<10} {'Epsilon'}")
     print("-" * 55)
 
+    # DEBUG: Check state size
+    print("\n=== DEBUGGING STATE SIZE ===")
+    test_state = env.reset()
+    print(f"State length: {len(test_state)}")
+    print(f"State values: {test_state}")
+    print(f"Expected: 23 features")
+    print("=" * 40 + "\n")
     for game in range(1, num_games + 1):
         state = env.reset()
 
