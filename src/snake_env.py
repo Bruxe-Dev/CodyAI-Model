@@ -115,6 +115,38 @@ class SnakeEnv:
             (dir_d and self._is_dangerous(point_d2))
         )
         
+        # Danger 2 blocks away (right)
+        danger_right_2 = (
+            (dir_u and self._is_dangerous(point_r2)) or 
+            (dir_d and self._is_dangerous(point_l2)) or 
+            (dir_l and self._is_dangerous(point_u2)) or 
+            (dir_r and self._is_dangerous(point_d2))
+        )
+        
+        # Danger 2 blocks away (left)
+        danger_left_2 = (
+            (dir_d and self._is_dangerous(point_r2)) or 
+            (dir_u and self._is_dangerous(point_l2)) or 
+            (dir_r and self._is_dangerous(point_u2)) or 
+            (dir_l and self._is_dangerous(point_d2))
+        )
+        
+        # Danger 1 block away (behind)
+        danger_behind = (
+            (dir_l and self._is_dangerous(point_r)) or 
+            (dir_r and self._is_dangerous(point_l)) or 
+            (dir_d and self._is_dangerous(point_u)) or 
+            (dir_u and self._is_dangerous(point_d))
+        )
+        
+        # Danger 2 blocks away (behind)
+        danger_behind_2 = (
+            (dir_l and self._is_dangerous(point_r2)) or 
+            (dir_r and self._is_dangerous(point_l2)) or 
+            (dir_d and self._is_dangerous(point_u2)) or 
+            (dir_u and self._is_dangerous(point_d2))
+        )
+        
         # Food location (binary)
         food_left = self.food[0] < head[0]
         food_right = self.food[0] > head[0]
@@ -136,36 +168,40 @@ class SnakeEnv:
         
         # Build state array (23 features total)
         state = [
-            # Danger (4 features)
+            # Danger (8 features)
             int(danger_straight),      # 0
             int(danger_right),         # 1
             int(danger_left),          # 2
             int(danger_ahead_2),       # 3
+            int(danger_right_2),       # 4
+            int(danger_left_2),        # 5
+            int(danger_behind),        # 6
+            int(danger_behind_2),      # 7
             
             # Direction (4 features)
-            int(dir_l),                # 4
-            int(dir_r),                # 5
-            int(dir_u),                # 6
-            int(dir_d),                # 7
+            int(dir_l),                # 8
+            int(dir_r),                # 9
+            int(dir_u),                # 10
+            int(dir_d),                # 11
             
             # Food direction (4 features)
-            int(food_left),            # 8
-            int(food_right),           # 9
-            int(food_up),              # 10
-            int(food_down),            # 11
+            int(food_left),            # 12
+            int(food_right),           # 13
+            int(food_up),              # 14
+            int(food_down),            # 15
             
             # Food distance (2 features)
-            food_distance_x,           # 12
-            food_distance_y,           # 13
+            food_distance_x,           # 16
+            food_distance_y,           # 17
             
             # Snake length (1 feature)
-            snake_length,              # 14
+            snake_length,              # 18
             
             # Available space (4 features)
-            space_left,                # 15
-            space_right,               # 16
-            space_up,                  # 17
-            space_down,                # 18
+            space_left,                # 19
+            space_right,               # 20
+            space_up,                  # 21
+            space_down,                # 22
         ]
         
         # VERIFY: Should be 23 features
