@@ -31,7 +31,7 @@ class SnakeEnv:
 
         if self.render_mode:
             self.display = pygame.display.set_mode((self.w, self.h))
-            pygame.display.set_caption("Snake AI Training")
+            pygame.display.set_caption(f"Cody AI Training - {self.w}x{self.h}")
             self.clock = pygame.time.Clock()
             self.font = pygame.font.Font(None, 36)
 
