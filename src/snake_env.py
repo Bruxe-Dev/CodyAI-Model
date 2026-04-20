@@ -17,14 +17,17 @@ class Direction(Enum):
     RIGHT = 4
 
 class SnakeEnv:
-    def __init__(self, render=True):
+    def __init__(self, render=True,width= 640, height= 480):
         """
         render=False → runs invisibly (fast training, no window)
         render=True  → shows the game window (watch it play)
         """
         self.render_mode = render
-        self.w = SCREEN_WIDTH
-        self.h = SCREEN_HEIGHT
+        self.w = width
+        self.h = height
+
+        self.w = (self.w // BLOCK_SIZE) * BLOCK_SIZE
+        self.h = (self.h // BLOCK_SIZE) * BLOCK_SIZE
 
         if self.render_mode:
             self.display = pygame.display.set_mode((self.w, self.h))
