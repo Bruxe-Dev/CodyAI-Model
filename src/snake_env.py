@@ -161,7 +161,8 @@ class SnakeEnv:
         food_distance_y = abs(self.food[1] - head[1]) / self.h
         
         # Snake length (normalized)
-        snake_length = len(self.snake) / 100.0
+        max_possible_length = (self.w // BLOCK_SIZE) * (self.h // BLOCK_SIZE)
+        snake_length = len(self.snake) / max_possible_length
         
         # Available space in each direction (normalized)
         space_left = head[0] / self.w
