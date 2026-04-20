@@ -3,6 +3,31 @@ import matplotlib.pyplot as plt
 from src.snake_env import SnakeEnv
 from src.dqn_agent import DQNAgent
 
+def get_curriculum_grid(game_number):
+    if game_number <= 1000:
+        width, height = 400,300
+        phase = 'Foundation'
+    
+    elif game_number <= 2500:
+        width,height = 640,480
+        phase = 'Scaling'
+
+    elif game_number <= 4000:
+        width,height = 800,600
+        phase= 'Mastery'
+
+    else:
+        import random
+        grid_options = [
+            (400, 300),   # Small
+            (560, 420),   # Medium-Small
+            (640, 480),   # Standard
+            (720, 540),   # Medium-Large
+            (800, 600),
+        ]
+
+        width,height = random.choice(grid_options)
+        phase = 'Generalisation'
 def plot_results(scores, best_scores, avg_scores, epsilons):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7))
     fig.suptitle("Cody AI — Training Results", fontsize=14, fontweight="bold")
