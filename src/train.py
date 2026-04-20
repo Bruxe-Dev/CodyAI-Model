@@ -61,31 +61,50 @@ def plot_results(scores, best_scores, avg_scores, epsilons):
 
 
 def train():
-    env   = SnakeEnv(render=False)   # set render=False for faster training (no window)
+    """
+    Train the AI with progressive curriculum learning
+    """
     agent = DQNAgent()
-
-    num_games  = 5000
+    
+    num_games = 5000  # Total games to train
     best_score = 0
-
-    all_scores  = []
+    
+    # Lists to track progress
+    all_scores = []
     best_scores = []
-    avg_scores  = []
-    epsilons    = []
-
-    print("Training started! Graph will show when done.\n")
-    print(f"{'Game':<8} {'Score':<8} {'Best':<8} {'Avg(50)':<10} {'Epsilon'}")
-    print("-" * 55)
-
-    # DEBUG: Check state size
-    print("\n=== DEBUGGING STATE SIZE ===")
-    test_state = env.reset()
-    print(f"State length: {len(test_state)}")
-    print(f"State values: {test_state}")
-    print(f"Expected: 23 features")
-    print("=" * 40 + "\n")
+    avg_scores = []
+    epsilons = []
+    grid_history = []  # NEW: Track which grid was used
+    
+    print("=" * 80)
+    print("  PROGRESSIVE CURRICULUM TRAINING")
+    print("=" * 80)
+    print("\nPhases:")
+    print("  1-1000:    Foundation (400x300)   - Learn basics")
+    print("  1001-2500: Scaling (640x480)      - Apply skills")  
+    print("  2501-4000: Mastery (800x600)      - Handle complexity")
+    print("  4001+:     Generalization (mixed) - Adapt to anything")
+    print("\n" + "=" * 80)
+    print(f"\n{'Game':<8} {'Phase':<16} {'Grid':<12} {'Score':<8} {'Best':<8} {'Avg(50)':<10} {'ε':<8}")
+    print("-" * 80)
+    
+    current_phase = ""  # Track phase changes
+    
     for game in range(1, num_games + 1):
+        # GET GRID SIZE FROM CURRICULUM
+        width, height, phase = get_curriculum_grid(game)
+        grid_history.append(f"{width}x{height}")
+        
+        # ANNOUNCE PHASE CHANGES
+        if phase != current_phase:
+            current_phase = phase
+            print(f"   PHASE: {phase.upper()} - Grid {width}x{height}")
+        
+        # CREATE ENVIRONMENT WITH CURRICULUM GRID SIZE
+        env = SnakeEnv(render=False, width=width, height=height)
         state = env.reset()
-
+        
+        # PLAY ONE GAME
         while True:
             action = agent.act(state)
             next_state, reward, done = env.step(action)
@@ -94,26 +113,34 @@ def train():
             state = next_state
             if done:
                 break
-
-        # --- Record stats ---
+        
+        # RECORD STATISTICS
         all_scores.append(env.score)
-
+        
+        # Save model when new best score achieved
         if env.score > best_score:
             best_score = env.score
             agent.save("main_model.npz")
-
+        
         best_scores.append(best_score)
-        avg = float(np.mean(all_scores[-50:]))
+        avg = float(np.mean(all_scores[-50:]))  # Rolling average of last 50 games
         avg_scores.append(avg)
         epsilons.append(agent.epsilon)
-
+        
+        # PRINT PROGRESS every 10 games
         if game % 10 == 0:
-            print(f"{game:<8} {env.score:<8} {best_score:<8} "
-                  f"{avg:<10.2f} {agent.epsilon:.4f}")
-
-    print(f"\nTraining complete! Best score: {best_score}")
+            print(f"{game:<8} {phase:<16} {width}x{height:<9} {env.score:<8} "
+                  f"{best_score:<8} {avg:<10.2f} {agent.epsilon:<8.4f}")
+    
+    # TRAINING COMPLETE
+    print("\n" + "=" * 80)
+    print(f" TRAINING COMPLETE!")
+    print(f"  Best Score: {best_score}")
+    print(f"  Final Avg:  {avg:.2f}")
+    print("=" * 80 + "\n")
+    
+    # Generate visualization
     plot_results(all_scores, best_scores, avg_scores, epsilons)
-
 
 def watch():
     env   = SnakeEnv(render=True)
