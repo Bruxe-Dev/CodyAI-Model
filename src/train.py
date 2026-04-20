@@ -28,6 +28,8 @@ def get_curriculum_grid(game_number):
 
         width,height = random.choice(grid_options)
         phase = 'Generalisation'
+
+    return width, height, phase
 def plot_results(scores, best_scores, avg_scores, epsilons):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7))
     fig.suptitle("Cody AI — Training Results", fontsize=14, fontweight="bold")
