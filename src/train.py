@@ -4,15 +4,15 @@ from src.snake_env import SnakeEnv
 from src.dqn_agent import DQNAgent
 
 def get_curriculum_grid(game_number):
-    if game_number <= 1000:
+    if game_number <= 2000:
         width, height = 400,300
         phase = 'Foundation'
     
-    elif game_number <= 2500:
+    elif game_number <= 4500:
         width,height = 640,480
         phase = 'Scaling'
 
-    elif game_number <= 4000:
+    elif game_number <= 6500:
         width,height = 800,600
         phase= 'Mastery'
 
