@@ -75,7 +75,7 @@ class NeuralNetwork:
         return np.argmax(scores)
 
 if __name__ == "__main__":
-    net = NeuralNetwork(input_size=23, hidden_size=256, output_size=3)
+    net = NeuralNetwork(input_size=23, hidden_size=512, output_size=3)
 
     # Let's teach it one simple rule:
     # Given this state → action 1 (go straight) should score highest
