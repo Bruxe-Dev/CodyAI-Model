@@ -64,7 +64,7 @@ Controls: Arrow keys or WASD, SPACE to pause, ESC to quit.
 
 ### Neural Network Architecture (`src/nn.py`)
 - **Input**: 11 neurons (danger sensors, direction, food direction)
-- **Hidden**: 256 neurons (ReLU activation, He initialization)
+- **Hidden**: 512 neurons (ReLU activation, He initialization)
 - **Output**: 3 neurons (Q-values for [left, straight, right])
 - Loss: MSE | Optimizer: SGD with vectorized gradients
 
