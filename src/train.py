@@ -68,7 +68,7 @@ def train():
     """
     agent = DQNAgent()
     
-    num_games = 5000  # Total games to train
+    num_games = 10000  # Total games to train
     best_score = 0
     
     # Lists to track progress
