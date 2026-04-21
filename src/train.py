@@ -152,7 +152,7 @@ def watch():
     try:
         agent.load("main_model.npz")
     except FileNotFoundError:
-        print("No saved model found! Train first: python train.py")
+        print("No saved model found! Train first: python -m src.train")
         return
 
     print("Watching AI play... (close window to stop)\n")
