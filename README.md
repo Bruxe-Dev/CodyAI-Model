@@ -39,7 +39,7 @@ Dependencies: `numpy`, `matplotlib`, `pandas`, `pygame`
 python -m src.train
 ```
 
-The AI will train for 1000 games. Best model is auto-saved to `main_model.npz`.
+The AI will train for 5000+ games. Best model is auto-saved to `main_model.npz`.
 
 Options:
 - Edit `train.py` line 39: Set `render=False` for headless training (much faster)
@@ -63,7 +63,7 @@ Controls: Arrow keys or WASD, SPACE to pause, ESC to quit.
 ## How It Works
 
 ### Neural Network Architecture (`src/nn.py`)
-- **Input**: 11 neurons (danger sensors, direction, food direction)
+- **Input**: 23 neurons (danger sensors, direction, food direction)
 - **Hidden**: 512 neurons (ReLU activation, He initialization)
 - **Output**: 3 neurons (Q-values for [left, straight, right])
 - Loss: MSE | Optimizer: SGD with vectorized gradients
