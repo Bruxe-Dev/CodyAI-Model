@@ -31,7 +31,7 @@ class TradingEnv:
     def calculate_indicators(self):
         df = self.stock_data
         
-        rsi = RSIIndicator(close=df['Close'], window=14)
+        rsi = RSIIndicator(close=df['Close'].squeeze(), window=14)
         df['RSI'] = rsi.rsi()
         
         macd = MACD(close=df['Close'])

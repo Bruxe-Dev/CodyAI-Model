@@ -55,7 +55,7 @@ def train_trading_agent(ticker='AAPL', episodes=500):
     
     # Download stock data
     print("\n📊 Downloading market data...")
-    stock_data = download_stock_data(ticker, '2018-01-01', '2025-12-31')
+    stock_data = download_stock_data(ticker, '2018-01-01', '2023-12-31')
     
     # Create environment and agent
     env = TradingEnv(stock_data, initial_balance=10000)
