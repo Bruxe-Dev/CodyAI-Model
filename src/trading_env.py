@@ -31,10 +31,11 @@ class TradingEnv:
     def calculate_indicators(self):
         df = self.stock_data
         
-        rsi = RSIIndicator(close=df['Close'].squeeze(), window=14)
+        close_prices = df['close'].squeeze()
+        rsi = RSIIndicator(close=close_prices, window=14)
         df['RSI'] = rsi.rsi()
         
-        macd = MACD(close=df['Close'])
+        macd = MACD(close=close_prices)
         df['MACD'] = macd.macd()
         df['MACD_Signal'] = macd.macd_signal()
         df['MACD_Diff'] = macd.macd_diff()
