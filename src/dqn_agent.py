@@ -7,7 +7,7 @@ class DQNAgent:
     def __init__ (self):
         self.input_size = 23
         self.hidden_size = 256
-        self. output_size = 3
+        self.output_size = 3
 
         self.network = NeuralNetwork(self.input_size,self.hidden_size,self.output_size)
 
