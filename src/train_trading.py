@@ -94,7 +94,7 @@ def train_trading_agent(ticker='AAPL', episodes=500):
         # Save best model
         if episode_return > best_return:
             best_return = episode_return
-            agent.save(f"best_trading_model_{ticker}.npz")
+            agent.save(f"Trading_model{ticker}.npz")
         
         # Print progress
         if episode % 10 == 0:
