@@ -64,3 +64,57 @@ class tradingEnv:
             self.net_worth_history = [self.initial_balance]
             
             return self._get_state()
+
+        def get_state(self):
+            row = self.stock_data.iloc[self.current_step]
+        
+            # Normalize price to 0-1 range using min-max over recent window
+            recent_prices = self.stock_data['Close'].iloc[max(0, self.current_step-50):self.current_step+1]
+            price_min = recent_prices.min()
+            price_max = recent_prices.max()
+            normalized_price = (row['Close'] - price_min) / (price_max - price_min + 1e-8)
+            
+            # Normalize volume
+            recent_volume = self.stock_data['Volume'].iloc[max(0, self.current_step-50):self.current_step+1]
+            volume_min = recent_volume.min()
+            volume_max = recent_volume.max()
+            normalized_volume = (row['Volume'] - volume_min) / (volume_max - volume_min + 1e-8)
+            
+            # Portfolio state
+            current_price = row['Close']
+            portfolio_value = self.balance + (self.shares_held * current_price)
+            portfolio_ratio = portfolio_value / self.initial_balance  # How much profit/loss
+            
+            # Position ratio (how much stock vs cash)
+            stock_value = self.shares_held * current_price
+            position_ratio = stock_value / (portfolio_value + 1e-8)
+            
+            # Days holding position
+            # (We'll track this later - for now just use 0)
+            days_held = 0
+            
+            state = [
+                # Market indicators (8 features)
+                normalized_price,           # 0: Current price (normalized)
+                normalized_volume,          # 1: Volume (normalized)
+                row['RSI'] / 100,          # 2: RSI (0-1 range)
+                np.tanh(row['MACD'] / 100), # 3: MACD (normalized with tanh)
+                np.tanh(row['MACD_Signal'] / 100), # 4: MACD Signal
+                np.tanh(row['MACD_Diff'] / 100),   # 5: MACD Difference
+                (row['Close'] - row['SMA_20']) / (row['SMA_20'] + 1e-8), # 6: Distance from SMA_20
+                (row['Close'] - row['SMA_50']) / (row['SMA_50'] + 1e-8), # 7: Distance from SMA_50
+                
+                # Portfolio state (4 features)
+                portfolio_ratio,            # 8: Total value vs initial (profit/loss)
+                position_ratio,             # 9: How much in stocks vs cash
+                float(self.shares_held > 0), # 10: Do we own stock? (1 or 0)
+                days_held / 100,            # 11: How long we've held (normalized)
+                
+                # Recent momentum (3 features)
+                row['Price_Change'],        # 12: Today's price change %
+                row['Volume_Change'],       # 13: Today's volume change %
+                np.tanh((row['Close'] - self.stock_data['Close'].iloc[max(0, self.current_step-5):self.current_step].mean()) / row['Close']) # 14: 5-day momentum
+            ]
+            
+            return np.array(state, dtype=np.float32)
+    
