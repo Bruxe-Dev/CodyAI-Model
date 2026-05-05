@@ -8,3 +8,10 @@ class TradingDQNAgent:
         self.input_size = 15
         self.hidden_size = 512
         self.output_size = 3
+
+        self.network = NeuralNetwork(
+            self.input_size,
+            self.hidden_size,
+            self.output_size
+        )
+        
