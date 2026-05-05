@@ -67,34 +67,33 @@ class TradingEnv:
             return self._get_state()
 
     def _get_state(self):
-                row = self.stock_data.iloc[self.current_step]
+            row = self.stock_data.iloc[self.current_step]
         
             # Normalize price to 0-1 range using min-max over recent window
-                recent_prices = self.stock_data['Close'].iloc[max(0, self.current_step-50):self.current_step+1]
-                price_min = recent_prices.min()
-                price_max = recent_prices.max()
-                normalized_price = (row['Close'] - price_min) / (price_max - price_min + 1e-8)
+            recent_prices = self.stock_data['Close'].iloc[max(0, self.current_step-50):self.current_step+1]
+            price_min = recent_prices.min()
+            price_max = recent_prices.max()
+            normalized_price = (row['Close'] - price_min) / (price_max - price_min + 1e-8)
                 
-                # Normalize volume
-                recent_volume = self.stock_data['Volume'].iloc[max(0, self.current_step-50):self.current_step+1]
-                volume_min = recent_volume.min()
-                volume_max = recent_volume.max()
-                normalized_volume = (row['Volume'] - volume_min) / (volume_max - volume_min + 1e-8)
+            # Normalize volume
+            recent_volume = self.stock_data['Volume'].iloc[max(0, self.current_step-50):self.current_step+1]
+            volume_min = recent_volume.min()
+            volume_max = recent_volume.max()
+            normalized_volume = (row['Volume'] - volume_min) / (volume_max - volume_min + 1e-8)
                 
-                # Portfolio state
-                current_price = row['Close']
-                portfolio_value = self.balance + (self.shares_held * current_price)
-                portfolio_ratio = portfolio_value / self.initial_balance  # How much profit/loss
+            # Portfolio state
+            current_price = row['Close']
+            portfolio_value = self.balance + (self.shares_held * current_price)
+            portfolio_ratio = portfolio_value / self.initial_balance  # How much profit/loss
                 
-                # Position ratio (how much stock vs cash)
-                stock_value = self.shares_held * current_price
-                position_ratio = stock_value / (portfolio_value + 1e-8)
+            # Position ratio (how much stock vs cash)
+            stock_value = self.shares_held * current_price
+            position_ratio = stock_value / (portfolio_value + 1e-8)
+            
+           
+            days_held = 0
                 
-                # Days holding position
-                # (We'll track this later - for now just use 0)
-                days_held = 0
-                
-                state = [
+            state = [
                     # Market indicators (8 features)
                     normalized_price,           # 0: Current price (normalized)
                     normalized_volume,          # 1: Volume (normalized)
@@ -117,7 +116,7 @@ class TradingEnv:
                     np.tanh((row['Close'] - self.stock_data['Close'].iloc[max(0, self.current_step-5):self.current_step].mean()) / row['Close']) # 14: 5-day momentum
                 ]
                 
-                return np.array(state, dtype=np.float32)
+            return np.array(state, dtype=np.float32)
 
     def step(self, action):
 
