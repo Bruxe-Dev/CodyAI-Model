@@ -48,20 +48,14 @@ def plot_trading_results(returns, portfolio_values, epsilons):
     plt.show()
 
 def train_trading_agent(ticker='AAPL', episodes=500):
-    """
-    Train trading AI
-    
-    Args:
-        ticker: Stock symbol to trade
-        episodes: Number of training episodes
-    """
+
     print("=" * 80)
     print(f"  🤖 TRAINING TRADING AI ON {ticker}")
     print("=" * 80)
     
     # Download stock data
     print("\n📊 Downloading market data...")
-    stock_data = download_stock_data(ticker, '2018-01-01', '2023-12-31')
+    stock_data = download_stock_data(ticker, '2018-01-01', '2025-12-31')
     
     # Create environment and agent
     env = TradingEnv(stock_data, initial_balance=10000)
