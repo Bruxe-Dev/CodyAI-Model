@@ -114,7 +114,7 @@ class TradingEnv:
             ]
             
         return np.array(state, dtype=np.float32)
-        
+
     def step(self, action):
 
             current_price = self.stock_data.iloc[self.current_step]['Close']
@@ -183,15 +183,16 @@ class TradingEnv:
 
 
 def download_stock_data(ticker, start_date, end_date):
-    print(f"Downloading {ticker} data from {start_date} to {end_date}...")
-    
+    print(f"Downloading {ticker} data...")
     data = yf.download(ticker, start=start_date, end=end_date, progress=False)
     
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
+        
     if data.empty:
         raise ValueError(f"No data found for {ticker}")
     
     print(f"✓ Downloaded {len(data)} days of data")
-    
     return data
 
 
