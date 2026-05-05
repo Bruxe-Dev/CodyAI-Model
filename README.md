@@ -36,7 +36,7 @@ Dependencies: `numpy`, `matplotlib`, `pandas`, `pygame`
 ### Train the model
 
 ```bash
-python -m src.train
+python -m src_snake.train
 ```
 
 The AI will train for 5000+ games. Best model is auto-saved to `main_model.npz`.
@@ -47,7 +47,7 @@ Options:
 ### Watch Trained model Play
 
 ```bash
-python -m src.train watch
+python -m src_snake.train watch
 ```
 
 Loads `main_model.npz` and displays the AI playing with pygame visualization.
@@ -122,7 +122,7 @@ agent.load("main_model.npz")
 ## Troubleshooting
 
 **ImportError: No module named 'src'**
-> Run with: `python -m src.train` (not `python src/train.py`)
+> Run with: `python -m src_snake.train` (not `python src_snake/train.py`)
 
 **Slow training**
 > Set `render=False` in `train.py` line 39
