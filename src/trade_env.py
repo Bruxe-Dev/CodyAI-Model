@@ -27,3 +27,30 @@ class tradingEnv:
         
         # Episode tracking
         self.max_steps = len(self.stock_data) - 1
+
+    def calculate_indicators(self):
+        df = self.stock_data
+        
+        rsi = RSIIndicator(close=df['Close'], window=14)
+        df['RSI'] = rsi.rsi()
+        
+        macd = MACD(close=df['Close'])
+        df['MACD'] = macd.macd()
+        df['MACD_Signal'] = macd.macd_signal()
+        df['MACD_Diff'] = macd.macd_diff()
+        
+        # Simple Moving Averages - Average price over time
+        df['SMA_20'] = df['Close'].rolling(window=20).mean()  # 20-day average
+        df['SMA_50'] = df['Close'].rolling(window=50).mean()  # 50-day average
+        
+        # Price Change Percentage
+        df['Price_Change'] = df['Close'].pct_change()
+        
+        # Volume Change
+        df['Volume_Change'] = df['Volume'].pct_change()
+        
+        # Remove NaN values (first rows don't have enough data)
+        df.dropna(inplace=True)
+        
+        self.stock_data = df
+        self.max_steps = len(df) - 1
