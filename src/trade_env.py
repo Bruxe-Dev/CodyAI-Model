@@ -54,3 +54,13 @@ class tradingEnv:
         
         self.stock_data = df
         self.max_steps = len(df) - 1
+
+        def reset(self):
+
+            self.current_step = 50  # Start at day 50 (need history for indicators)
+            self.balance = self.initial_balance
+            self.shares_held = 0
+            self.total_trades = 0
+            self.net_worth_history = [self.initial_balance]
+            
+            return self._get_state()
