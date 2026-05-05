@@ -5,12 +5,12 @@ from ta.momentum import RSIIndicator
 from ta.trend import MACD
 from enum import Enum
 
-class tradingAction(Enum):
+class TradingAction(Enum):
     HOLD = 0
     BUY = 1
     SELL = 2
 
-class tradingEnv:
+class TradingEnv:
     def __init__(self,stock_data, initial_balance = 10000,commission= 0.001):
         self.stock_data = stock_data
         self.initial_balance = initial_balance
