@@ -1,4 +1,4 @@
-Trading_model_*.npz
+best_*.npz
 *.npy
 *.png
 venv
