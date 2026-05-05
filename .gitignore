@@ -1,5 +1,6 @@
 *.npz
 *.npy
+*.png
 venv
 __pycache__
 __init__.py
