@@ -6,3 +6,4 @@ pandas
 pygame
 yfinance
 ta
+forex-python
