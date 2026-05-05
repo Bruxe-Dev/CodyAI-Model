@@ -6,7 +6,7 @@ A Snake game AI trained using Deep Q-Learning (DQN) with a custom neural network
 
 ```
 CodyAI-Model/
-├── src/
+├── src_snake/
 │   ├── nn.py          # 2-layer neural network (ReLU, He init)
 │   ├── dqn_agent.py   # DQN agent with experience replay
 │   ├── snake_env.py   # Gym-like environment (11-dim state)
