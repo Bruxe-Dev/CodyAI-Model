@@ -117,4 +117,124 @@ class tradingEnv:
             ]
             
             return np.array(state, dtype=np.float32)
+
+        def step(self, action):
+
+            current_price = self.stock_data.iloc[self.current_step]['Close']
+            
+            reward = 0
+            
+            # Execute action
+            if action == TradingAction.BUY.value:
+                # BUY: Use all cash to buy shares
+                if self.balance > 0 and self.shares_held == 0:
+                    # Calculate how many shares we can buy
+                    shares_to_buy = self.balance / (current_price * (1 + self.commission))
+                    cost = shares_to_buy * current_price * (1 + self.commission)
+                    
+                    self.shares_held = shares_to_buy
+                    self.balance -= cost
+                    self.total_trades += 1
+                    
+                    # Small penalty for trading (to prevent overtrading)
+                    reward = -0.1
+            
+            elif action == TradingAction.SELL.value:
+                # SELL: Sell all shares
+                if self.shares_held > 0:
+                    # Calculate profit/loss
+                    sale_value = self.shares_held * current_price * (1 - self.commission)
+                    profit = sale_value - (self.initial_balance - self.balance)
+                    
+                    self.balance += sale_value
+                    self.shares_held = 0
+                    self.total_trades += 1
+                    
+                    # Reward based on profit (normalized)
+                    reward = profit / self.initial_balance * 100  # Convert to percentage
+            
+            # HOLD: Do nothing (action == 0)
+            
+            # Move to next day
+            self.current_step += 1
+            
+            # Calculate current portfolio value
+            portfolio_value = self.balance + (self.shares_held * self.stock_data.iloc[self.current_step]['Close'])
+            self.net_worth_history.append(portfolio_value)
+            
+            # Small reward for holding profitable position
+            if self.shares_held > 0:
+                unrealized_profit = (portfolio_value - self.initial_balance) / self.initial_balance
+                reward += unrealized_profit * 0.1  # Small incremental reward
+            
+            # Check if episode is done
+            done = self.current_step >= self.max_steps
+            
+            # Get next state
+            next_state = self._get_state()
+            
+            return next_state, reward, done
+    
+    def get_portfolio_value(self):
+        """Get current total portfolio value"""
+        current_price = self.stock_data.iloc[self.current_step]['Close']
+        return self.balance + (self.shares_held * current_price)
+    
+    def get_return(self):
+        """Get total return percentage"""
+        return ((self.get_portfolio_value() - self.initial_balance) / self.initial_balance) * 100
+
+
+def download_stock_data(ticker, start_date, end_date):
+    print(f"Downloading {ticker} data from {start_date} to {end_date}...")
+    
+    data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+    
+    if data.empty:
+        raise ValueError(f"No data found for {ticker}")
+    
+    print(f"✓ Downloaded {len(data)} days of data")
+    
+    return data
+
+
+# Test the environment
+if __name__ == "__main__":
+    # Download Apple stock data
+    stock_data = download_stock_data('AAPL', '2020-01-01', '2024-12-31')
+    
+    # Create trading environment
+    env = TradingEnv(stock_data, initial_balance=10000)
+    
+    # Test one episode with random actions
+    state = env.reset()
+    print(f"\nInitial state shape: {state.shape}")
+    print(f"Initial state: {state}")
+    print(f"\nStarting balance: ${env.initial_balance}")
+    
+    total_reward = 0
+    
+    for step in range(100):
+        # Random action
+        action = np.random.randint(0, 3)
+        
+        next_state, reward, done = env.step(action)
+        total_reward += reward
+        
+        if step % 20 == 0:
+            print(f"\nStep {step}:")
+            print(f"  Action: {TradingAction(action).name}")
+            print(f"  Portfolio Value: ${env.get_portfolio_value():.2f}")
+            print(f"  Return: {env.get_return():.2f}%")
+            print(f"  Shares Held: {env.shares_held:.2f}")
+            print(f"  Cash: ${env.balance:.2f}")
+        
+        if done:
+            break
+    
+    print(f"\n✓ Episode complete!")
+    print(f"Final portfolio value: ${env.get_portfolio_value():.2f}")
+    print(f"Total return: {env.get_return():.2f}%")
+    print(f"Total trades: {env.total_trades}")
+
     
