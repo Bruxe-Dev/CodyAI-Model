@@ -66,7 +66,7 @@ class TradingEnv:
             
             return self._get_state()
 
-    def get_state(self):
+    def _get_state(self):
                 row = self.stock_data.iloc[self.current_step]
         
             # Normalize price to 0-1 range using min-max over recent window
