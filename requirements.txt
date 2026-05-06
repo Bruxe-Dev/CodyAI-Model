@@ -1,6 +1,5 @@
 gradio
 numpy
-numpy
 matplotlib
 pandas
 pygame
