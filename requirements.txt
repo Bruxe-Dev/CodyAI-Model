@@ -6,3 +6,4 @@ pygame
 yfinance
 ta
 forex-python
+MetaTrader5
