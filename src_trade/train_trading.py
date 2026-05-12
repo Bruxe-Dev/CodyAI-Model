@@ -12,7 +12,7 @@ def train_forex_agent(pair='EURUSD=X', episodes=2000):
     # 1. FORCE FRESH START
     if os.path.exists(f"best_{pair}.npz"):
         os.remove(f"best_{pair}.npz")
-        print("🗑️ Deleted old model to force fresh learning.")
+        print("Deleted old model to force fresh learning.")
 
     data = download_forex_data(pair='EURUSD', start_year=2019, end_year=2022)
     env = ForexEnv(data)
@@ -63,6 +63,8 @@ def train_forex_agent(pair='EURUSD=X', episodes=2000):
         if ep_return > best_return:
             best_return = ep_return
             agent.save(f"best_{pair}.npz")
+        
+        agent.decay_epsilon()
         
         if ep % 10 == 0 or ep == 1:
             print(f"{ep:<5} | {color}{ep_return:>8.2f}%{RESET} | ${port_val:>10.2f} | {env.total_trades:<8} | {agent.epsilon:.4f}")

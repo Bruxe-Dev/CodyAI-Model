@@ -11,7 +11,7 @@ class ForexEnv:
         self.forex_data = forex_data
         self.initial_balance = initial_balance
         self.leverage = leverage
-        self.position_size_pct = 0.2 
+        self.position_size_pct = 0.05 
         self._calculate_indicators()
         self.reset()
 
@@ -129,7 +129,7 @@ class ForexEnv:
 def download_forex_data(pair='EURUSD', start_year=2019, end_year=2022):
     """Fetches historical H1 data from MT5 for the requested range."""
     if not mt5.initialize():
-        print("❌ MT5 Initialize failed")
+        print("[X] MT5 Initialize failed")
         return None
     
     # Ensure symbol matches MT5 naming convention
@@ -139,7 +139,7 @@ def download_forex_data(pair='EURUSD', start_year=2019, end_year=2022):
     
     rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_dt, end_dt)
     if rates is None or len(rates) == 0:
-        print(f"❌ No data found for {symbol} between {start_year}-{end_year}.")
+        print(f"[X] No data found for {symbol} between {start_year}-{end_year}.")
         return None
         
     df = pd.DataFrame(rates)
@@ -148,5 +148,5 @@ def download_forex_data(pair='EURUSD', start_year=2019, end_year=2022):
     df = df[['open', 'high', 'low', 'close', 'tick_volume']].copy()
     df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
     
-    print(f"✅ Successfully downloaded {len(df)} candles from MT5.")
+    print(f"[OK] Successfully downloaded {len(df)} candles from MT5.")
     return df
