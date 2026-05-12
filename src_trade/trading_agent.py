@@ -53,10 +53,11 @@ class TradingDQNAgent:
 
         loss = self.network.backward(states, targets, self.learning_rate)
     
-        if self.epsilon > self.epsilon_min: 
-            self.epsilon *= self.epsilon_decay
-            
         return loss
+
+    def decay_epsilon(self):
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
     def save(self, filepath):
         np.savez(filepath, w1=self.network.w1, b1=self.network.b1, 
