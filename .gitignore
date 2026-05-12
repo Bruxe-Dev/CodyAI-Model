@@ -4,5 +4,4 @@ best_*.npz
 venv
 __pycache__
 __init__.py
-src_trade/
 .env

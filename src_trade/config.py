@@ -1,0 +1,18 @@
+MT5_ACCOUNT = 106753995  
+MT5_PASSWORD = "*8TfYpMl"  
+MT5_SERVER = "MetaQuotes-Demo"  
+
+# Trading Settings
+RISK_PER_TRADE_PERCENT = 1.0    
+MAX_DAILY_LOSS_USD = 50.0       
+EQUITY_PROTECTION_PCT = 5.0     
+MAX_LOT_SIZE = 0.5  
+
+# Risk Management
+SYMBOL = "EURUSD"
+TIMEFRAME = "H1"
+ATR_MULTIPLIER_SL = 3.5       
+ATR_MULTIPLIER_TP = 4.5         
+TRAILING_STOP_ACTIVE = True
+
+MODEL_PATH = "best_EURUSD=X.npz"
