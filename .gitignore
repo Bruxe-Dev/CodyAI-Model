@@ -3,5 +3,6 @@ best_*.npz
 *.png
 venv
 __pycache__
+/src_trade
 __init__.py
 .env
