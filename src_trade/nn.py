@@ -1,21 +1,6 @@
 import numpy as np 
 
 class NeuralNetwork:
-    """
-    3-layer fully-connected network  (input → 128 → 64 → output)
-    with Leaky ReLU activations and Adam optimiser.
-
-    Bugs fixed vs original
-    ----------------------
-    FIX-NN-1  backward() used to call self.forward(x) again internally,
-              overwriting z1/z2/z3 with a brand-new pass and computing every
-              gradient against the WRONG activations.  Now backward() reads the
-              activations cached by the most recent forward() call.
-    FIX-NN-2  Plain SGD replaced with Adam.  Adam handles the non-stationary,
-              sparse reward signal of forex DQN 3-5x faster.
-    FIX-NN-3  self._params is rebuilt after every update so the param list
-              never silently goes stale.
-    """
 
     def __init__(self, input_size: int, hidden_size: int, output_size: int):
         h2 = hidden_size // 2
