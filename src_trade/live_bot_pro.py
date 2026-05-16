@@ -230,7 +230,7 @@ class OverlapSniperBot:
         sentiment = self._get_sentiment()
         symbol    = self._best_pair()
         if symbol is None:
-            print("  ⚠️  No valid pair."); return
+            print("No valid pair."); return
 
         state  = self._live_state(symbol, sentiment, is_primary)
         action = self.agent.act(state)
