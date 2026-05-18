@@ -1,18 +1,3 @@
-"""
-live_bot_pro.py  —  Overlap Sniper Bot
-
-Sessions (UTC)
-──────────────
-PRIMARY   13:00–17:00   London/NY overlap   full risk   |sentiment| ≥ 0.10
-SECONDARY 07:00–12:00   London open         50 % risk   |sentiment| ≥ 0.20
-TERTIARY  17:00–22:00   NY late / Asia      25 % risk   |sentiment| ≥ 0.35
-DEAD ZONE 22:00–07:00   no new entries
-
-SL and TP are computed from market structure (swing highs/lows + ATR buffer)
-via the same _compute_sl_tp() logic used in training — so live behaviour
-exactly matches what the model learned.
-"""
-
 import time
 from datetime import datetime, time as dtime
 
