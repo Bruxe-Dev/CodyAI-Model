@@ -1,79 +1,166 @@
+"""
+nn.py  —  4-layer neural network with Adam optimiser
+
+Architecture upgrade
+--------------------
+Previous: 28 → 128 → 64 → 3   =  12,163 parameters
+Current:  28 → 256 → 128 → 64 → 3  =  51,971 parameters  (4.3x more capacity)
+
+Why this matters for forex trading
+-----------------------------------
+The model needs to learn hundreds of distinct market conditions and how
+they combine.  12k parameters cannot encode that.  51k gives the network
+enough capacity to learn:
+  - Which EMA configurations are actually bullish vs noise
+  - How RSI interacts with Fib levels at specific volatility regimes
+  - When to hold through a drawdown vs when it's a real reversal
+  - How session timing changes the reliability of the same pattern
+
+Dropout (training only)
+-----------------------
+With 51k parameters there is a real risk of overfitting to the 2018-2022
+training data.  Dropout randomly disables 20% of neurons in hidden layers
+during training, forcing the network to learn redundant representations.
+This is standard practice in DRL.  Dropout is disabled during inference
+(act() calls) and when running the live bot.
+"""
+
 import numpy as np
 
 
 class NeuralNetwork:
-    """
-    3-layer fully-connected network  (input → 128 → 64 → output)
-    Leaky ReLU activations + Adam optimiser.
-    """
 
-    def __init__(self, input_size: int, hidden_size: int, output_size: int):
-        h2 = hidden_size // 2
-        self.w1 = np.random.randn(input_size,  hidden_size) * np.sqrt(2.0 / input_size)
-        self.b1 = np.zeros(hidden_size)
-        self.w2 = np.random.randn(hidden_size, h2)          * np.sqrt(2.0 / hidden_size)
-        self.b2 = np.zeros(h2)
-        self.w3 = np.random.randn(h2,          output_size) * np.sqrt(2.0 / h2)
-        self.b3 = np.zeros(output_size)
+    def __init__(self, input_size: int, hidden_sizes: list, output_size: int,
+                 dropout_rate: float = 0.2):
+        """
+        Args
+        ----
+        input_size   : number of input features (28)
+        hidden_sizes : list of hidden layer sizes e.g. [256, 128, 64]
+        output_size  : number of actions (3)
+        dropout_rate : fraction of neurons dropped during training (0 = off)
+        """
+        self.dropout_rate = dropout_rate
+        self.training     = True   # set to False during act() / live inference
 
-        self._params   = [self.w1, self.b1, self.w2, self.b2, self.w3, self.b3]
-        self._m        = [np.zeros_like(p) for p in self._params]
-        self._v        = [np.zeros_like(p) for p in self._params]
-        self._t        = 0
-        self._b1_adam  = 0.9
-        self._b2_adam  = 0.999
-        self._eps_adam = 1e-8
+        # Build weight matrices for arbitrary depth
+        layer_sizes = [input_size] + hidden_sizes + [output_size]
+        self.weights = []
+        self.biases  = []
 
-        # Activation cache — written by forward(), read by backward()
-        self.z1 = self.a1 = None
-        self.z2 = self.a2 = None
-        self.z3 = None
+        for i in range(len(layer_sizes) - 1):
+            fan_in  = layer_sizes[i]
+            fan_out = layer_sizes[i + 1]
+            # He initialisation
+            w = np.random.randn(fan_in, fan_out) * np.sqrt(2.0 / fan_in)
+            b = np.zeros(fan_out)
+            self.weights.append(w)
+            self.biases.append(b)
 
+        self.n_layers = len(self.weights)
+
+        # Adam state for every parameter matrix
+        self._mw = [np.zeros_like(w) for w in self.weights]
+        self._vw = [np.zeros_like(w) for w in self.weights]
+        self._mb = [np.zeros_like(b) for b in self.biases]
+        self._vb = [np.zeros_like(b) for b in self.biases]
+        self._t  = 0
+        self._b1 = 0.9
+        self._b2 = 0.999
+        self._ep = 1e-8
+
+        # Activation cache
+        self._z    = [None] * self.n_layers   # pre-activations
+        self._a    = [None] * self.n_layers   # post-activations
+        self._mask = [None] * (self.n_layers - 1)  # dropout masks
+
+        # Count and report parameters
+        total = sum(w.size + b.size for w, b in zip(self.weights, self.biases))
+        arch  = f"{input_size} → " + " → ".join(str(s) for s in hidden_sizes) + f" → {output_size}"
+        print(f"   Network: {arch}")
+        print(f"   Parameters: {total:,}  ({total*4/1024:.1f} KB)")
+
+    # ── activation ────────────────────────────────────────────────────────────
     def _lrelu(self, x):      return np.where(x > 0, x, 0.01 * x)
-    def _lrelu_grad(self, x): return np.where(x > 0, 1.0, 0.01)
+    def _lrelu_grad(self, x): return np.where(x > 0, 1.0,  0.01)
 
+    # ── forward ───────────────────────────────────────────────────────────────
     def forward(self, x: np.ndarray) -> np.ndarray:
-        self.z1 = np.dot(x,       self.w1) + self.b1;  self.a1 = self._lrelu(self.z1)
-        self.z2 = np.dot(self.a1, self.w2) + self.b2;  self.a2 = self._lrelu(self.z2)
-        self.z3 = np.dot(self.a2, self.w3) + self.b3
-        return self.z3
+        a = np.atleast_2d(x)
+        for i in range(self.n_layers):
+            z = np.dot(a, self.weights[i]) + self.biases[i]
+            self._z[i] = z
+            if i < self.n_layers - 1:
+                # Hidden layer: Leaky ReLU + optional dropout
+                a = self._lrelu(z)
+                if self.training and self.dropout_rate > 0:
+                    mask = (np.random.rand(*a.shape) > self.dropout_rate).astype(np.float32)
+                    mask /= (1.0 - self.dropout_rate)   # inverted dropout scaling
+                    a   *= mask
+                    self._mask[i] = mask
+                else:
+                    self._mask[i] = np.ones_like(a)
+            else:
+                # Output layer: linear (Q-values can be any sign/magnitude)
+                a = z
+            self._a[i] = a
+        return a
 
     def predict(self, x: np.ndarray) -> np.ndarray:
-        return np.argmax(self.forward(x), axis=-1)
+        self.training = False
+        result = np.argmax(self.forward(x), axis=-1)
+        self.training = True
+        return result
 
+    # ── backward ──────────────────────────────────────────────────────────────
     def backward(self, x: np.ndarray, target: np.ndarray,
                  learning_rate: float = 0.001) -> float:
-        """Uses cached activations — caller must call forward() first."""
+        """
+        Uses cached activations from the most recent forward() call.
+        Does NOT re-run forward().
+        """
         x      = np.atleast_2d(x)
         target = np.atleast_2d(target)
+        output = self._a[-1]
 
-        error = self.z3 - target
-        loss  = float(np.mean(np.square(np.clip(error, -1e3, 1e3))))
-        n     = target.shape[0] * target.shape[1]
-        d_out = 2.0 * error / n
+        error  = output - target
+        loss   = float(np.mean(np.square(np.clip(error, -1e3, 1e3))))
+        n      = target.shape[0] * target.shape[1]
 
-        d_w3 = np.dot(self.a2.T, d_out);            d_b3 = np.sum(d_out, axis=0)
-        d_h2 = np.dot(d_out, self.w3.T) * self._lrelu_grad(self.z2)
-        d_w2 = np.dot(self.a1.T, d_h2);             d_b2 = np.sum(d_h2, axis=0)
-        d_h1 = np.dot(d_h2, self.w2.T) * self._lrelu_grad(self.z1)
-        d_w1 = np.dot(x.T, d_h1);                   d_b1 = np.sum(d_h1, axis=0)
+        # Output delta
+        delta = 2.0 * error / n
 
-        grads = [d_w1, d_b1, d_w2, d_b2, d_w3, d_b3]
-        for g in grads:
-            np.clip(g, -1.0, 1.0, out=g)
+        dw_list = []
+        db_list = []
+
+        for i in reversed(range(self.n_layers)):
+            a_prev = x if i == 0 else self._a[i - 1]
+            dw     = np.dot(a_prev.T, delta)
+            db     = np.sum(delta, axis=0)
+            dw_list.insert(0, dw)
+            db_list.insert(0, db)
+
+            if i > 0:
+                # Backprop through activation + dropout
+                delta = np.dot(delta, self.weights[i].T)
+                delta *= self._mask[i - 1]               # dropout mask
+                delta *= self._lrelu_grad(self._z[i - 1])
+
+        # Gradient clipping
+        for dw, db in zip(dw_list, db_list):
+            np.clip(dw, -1.0, 1.0, out=dw)
+            np.clip(db, -1.0, 1.0, out=db)
 
         self._t += 1
-        bc1 = 1.0 - self._b1_adam ** self._t
-        bc2 = 1.0 - self._b2_adam ** self._t
-        for i, (p, g) in enumerate(zip(self._params, grads)):
-            self._m[i] = self._b1_adam * self._m[i] + (1.0 - self._b1_adam) * g
-            self._v[i] = self._b2_adam * self._v[i] + (1.0 - self._b2_adam) * g * g
-            p -= learning_rate * (self._m[i] / bc1) / (np.sqrt(self._v[i] / bc2) + self._eps_adam)
+        bc1 = 1.0 - self._b1 ** self._t
+        bc2 = 1.0 - self._b2 ** self._t
 
-        self._params = [self.w1, self.b1, self.w2, self.b2, self.w3, self.b3]
+        for i, (dw, db) in enumerate(zip(dw_list, db_list)):
+            self._mw[i] = self._b1 * self._mw[i] + (1 - self._b1) * dw
+            self._vw[i] = self._b2 * self._vw[i] + (1 - self._b2) * dw * dw
+            self._mb[i] = self._b1 * self._mb[i] + (1 - self._b1) * db
+            self._vb[i] = self._b2 * self._vb[i] + (1 - self._b2) * db * db
+            self.weights[i] -= learning_rate * (self._mw[i]/bc1) / (np.sqrt(self._vw[i]/bc2) + self._ep)
+            self.biases[i]  -= learning_rate * (self._mb[i]/bc1) / (np.sqrt(self._vb[i]/bc2) + self._ep)
+
         return loss
-
-    @property
-    def weights(self): return [self.w1, self.w2, self.w3]
-    @property
-    def biases(self):  return [self.b1, self.b2, self.b3]

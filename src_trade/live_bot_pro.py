@@ -438,7 +438,6 @@ class OverlapSniperBot:
                     print(f"\n💤 [{now_t.strftime('%H:%M')} UTC] Dead zone — no scan.")
                     self.h1_bias = 0
 
-            # ── LAYER 2: M15 scan (once per new M15 candle, PRIMARY only) ────
             m15_slot = (now_m // 15) * 15   # 0, 15, 30, or 45
             if (sess_name == "PRIMARY"
                     and now_m % 15 < 2          # first 2 minutes of each M15 candle
