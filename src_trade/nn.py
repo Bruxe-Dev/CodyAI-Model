@@ -1,32 +1,4 @@
-"""
-nn.py  —  4-layer neural network with Adam optimiser
-
-Architecture upgrade
---------------------
-Previous: 28 → 128 → 64 → 3   =  12,163 parameters
-Current:  28 → 256 → 128 → 64 → 3  =  51,971 parameters  (4.3x more capacity)
-
-Why this matters for forex trading
------------------------------------
-The model needs to learn hundreds of distinct market conditions and how
-they combine.  12k parameters cannot encode that.  51k gives the network
-enough capacity to learn:
-  - Which EMA configurations are actually bullish vs noise
-  - How RSI interacts with Fib levels at specific volatility regimes
-  - When to hold through a drawdown vs when it's a real reversal
-  - How session timing changes the reliability of the same pattern
-
-Dropout (training only)
------------------------
-With 51k parameters there is a real risk of overfitting to the 2018-2022
-training data.  Dropout randomly disables 20% of neurons in hidden layers
-during training, forcing the network to learn redundant representations.
-This is standard practice in DRL.  Dropout is disabled during inference
-(act() calls) and when running the live bot.
-"""
-
 import numpy as np
-
 
 class NeuralNetwork:
 
