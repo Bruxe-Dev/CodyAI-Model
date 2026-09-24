@@ -76,7 +76,7 @@ def train(render_training=False):
     best_scores = []
     avg_scores = []
     epsilons = []
-    grid_history = []  # NEW: Track which grid was used
+    grid_history = []
     
     print("=" * 80)
     print("  PROGRESSIVE CURRICULUM TRAINING")
