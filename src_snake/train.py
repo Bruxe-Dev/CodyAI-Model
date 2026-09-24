@@ -103,7 +103,7 @@ def train(render_training=False):
             print(f"   PHASE: {phase.upper()} - Grid {width}x{height}")
         
         # CREATE ENVIRONMENT WITH CURRICULUM GRID SIZE
-        env = SnakeEnv(render=True, width=width, height=height)
+        env = SnakeEnv(render=render_training, width=width, height=height)
         state = env.reset()
         
         # PLAY ONE GAME
@@ -178,3 +178,5 @@ if __name__ == "__main__":
         watch()
     elif mode == "train":
         train()
+    elif mode == "train_view":
+        train(render_training=True)
