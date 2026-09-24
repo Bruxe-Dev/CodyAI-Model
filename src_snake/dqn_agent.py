@@ -1,7 +1,7 @@
 import numpy as np 
 import random
 from collections import deque
-from src.nn import NeuralNetwork
+from nn import NeuralNetwork
 
 class DQNAgent:
     def __init__ (self):

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from src.snake_env import SnakeEnv
-from src.dqn_agent import DQNAgent
+from snake_env import SnakeEnv
+from dqn_agent import DQNAgent
 
 def get_curriculum_grid(game_number):
     if game_number <= 2000:
@@ -62,7 +62,7 @@ def plot_results(scores, best_scores, avg_scores, epsilons):
     plt.show()
 
 
-def train():
+def train(render_training=False):
     """
     Train the AI with progressive curriculum learning
     """
@@ -103,7 +103,7 @@ def train():
             print(f"   PHASE: {phase.upper()} - Grid {width}x{height}")
         
         # CREATE ENVIRONMENT WITH CURRICULUM GRID SIZE
-        env = SnakeEnv(render=False, width=width, height=height)
+        env = SnakeEnv(render=True, width=width, height=height)
         state = env.reset()
         
         # PLAY ONE GAME
@@ -176,5 +176,5 @@ if __name__ == "__main__":
 
     if mode == "watch":
         watch()
-    else:
+    elif mode == "train":
         train()
